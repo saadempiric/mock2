@@ -3,7 +3,7 @@ import { Box, Paper, Title, Loader, Stack } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
-import { ChatInterfaceProps, ChatMessage } from "../../app/types";
+import { ChatInterfaceProps, ChatMessage } from "../../../app/types";
 
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
