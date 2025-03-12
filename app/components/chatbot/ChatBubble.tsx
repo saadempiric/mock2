@@ -1,6 +1,6 @@
 import React from "react";
 import { Avatar, Box, Text, Badge } from "@mantine/core";
-import { ChatBubbleProps } from "../../app/types";
+import { ChatBubbleProps } from "../../../app/types";
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const isUser = message.role === "user";

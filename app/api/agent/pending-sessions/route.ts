@@ -3,7 +3,7 @@ import Chat from "../../../models/Chat";
 import { Op } from "sequelize";
 import sequelize from "../../../lib/sequelize";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // Find sessions with handoff status
     const pendingSessions = await Chat.findAll({

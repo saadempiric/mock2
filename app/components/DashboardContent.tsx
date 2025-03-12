@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Title,
-  Tabs,
   Card,
   Text,
   Button,
@@ -13,10 +12,9 @@ import {
   TextInput,
   Paper,
   ScrollArea,
-  Divider,
   Modal,
 } from "@mantine/core";
-import { IconSend, IconX } from "@tabler/icons-react";
+import { IconSend } from "@tabler/icons-react";
 import { pusherClient } from "../lib/pusher";
 
 // Message type definition

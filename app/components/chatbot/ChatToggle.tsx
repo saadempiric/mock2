@@ -1,7 +1,7 @@
 import React from "react";
 import { ActionIcon, Tooltip } from "@mantine/core";
 import { IconMessageCircle, IconX } from "@tabler/icons-react";
-import { ChatToggleProps } from "../../app/types";
+import { ChatToggleProps } from "../../../app/types";
 
 const ChatToggle: React.FC<ChatToggleProps> = ({ isOpen, toggleChat }) => {
   return (
