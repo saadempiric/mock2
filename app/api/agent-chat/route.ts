@@ -22,11 +22,11 @@ export async function POST(req: Request) {
     });
 
     // Also trigger on the specific session channel
-    // await pusherServer.trigger(`chat-${sessionId}`, "new-message", {
-    //   role: "user",
-    //   content: query,
-    //   timestamp: new Date(),
-    // });
+    await pusherServer.trigger(`chat-${sessionId}`, "new-message", {
+      role: "user",
+      content: query,
+      timestamp: new Date(),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
