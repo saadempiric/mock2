@@ -20,7 +20,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isOpen,
   toggleChat,
 }) => {
-  const [userInfo, setUserInfo] = useState({ name: "", email: "" });
+  const [userInfo, setUserInfo] = useState({ name: "", email: "", isValidEmail: false });
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -273,6 +273,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       alert("Please complete all fields and verify the CAPTCHA.");
       return;
     }
+    else if(!userInfo.isValidEmail){
+      alert("Enter a valid email")
+      return
+    } 
     setIsAuthenticated(true);
   };
 
@@ -334,6 +338,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   if (!isOpen) return null;
 
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
   return (
     <Paper
       shadow="md"
@@ -383,8 +392,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             label="Email"
             placeholder="Enter your email"
             value={userInfo.email}
-            onChange={(e) =>
-              setUserInfo({ ...userInfo, email: e.target.value })
+            onChange={(e) => {
+              const newEmail = e.target.value;
+              setUserInfo({ ...userInfo, email: newEmail, isValidEmail: validateEmail(newEmail) })
+            }
             }
           />
           <ReCAPTCHA
