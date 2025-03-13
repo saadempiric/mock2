@@ -12,10 +12,12 @@ const nextConfig: NextConfig = {
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' 
                 https://*.pusher.com 
+                https://images.unsplash.com
                 https://teams.microsoft.com 
                 https://www.google.com 
                 https://www.gstatic.com 
                 https://consent.cookiebot.com;
+                https://consentcdn.cookiebot.com
               connect-src 'self' 
                 https://*.pusher.com 
                 wss://*.pusher.com 
