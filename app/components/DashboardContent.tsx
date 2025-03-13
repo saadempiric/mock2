@@ -13,16 +13,9 @@ import {
   Paper,
   ScrollArea,
   Modal,
-  Drawer,
-  ActionIcon,
-  SimpleGrid,
-  useMantineTheme,
-  useComputedColorScheme,
 } from "@mantine/core";
-import { IconSend, IconX, IconMenu2, IconArrowLeft } from "@tabler/icons-react";
+import { IconSend } from "@tabler/icons-react";
 import { pusherClient } from "../lib/pusher";
-import { useMediaQuery } from "@mantine/hooks";
-import { ColorSchemeToggle } from "./ColorSchemeToggle";
 
 // Message type definition
 interface Message {
@@ -41,12 +34,6 @@ interface Session {
 }
 
 const DashboardContent = () => {
-  const theme = useMantineTheme();
-  const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
-  const isTablet = useMediaQuery(`(max-width: ${theme.breakpoints.md})`);
-  const computedColorScheme = useComputedColorScheme("light");
-  const isDark = computedColorScheme === "dark";
-
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [agentMessage, setAgentMessage] = useState("");
@@ -54,7 +41,6 @@ const DashboardContent = () => {
   const [endSessionModalOpen, setEndSessionModalOpen] = useState(false);
   const [ignoreSessionModalOpen, setIgnoreSessionModalOpen] = useState(false);
   const [sessionToAction, setSessionToAction] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Load initial sessions on mount
   useEffect(() => {
@@ -187,16 +173,11 @@ const DashboardContent = () => {
       }
     );
 
-    // Close mobile menu when a session is selected
-    if (isMobile) {
-      setMobileMenuOpen(false);
-    }
-
     // Cleanup on unmount or session change
     return () => {
       pusherClient.unsubscribe(`chat-${activeSession}`);
     };
-  }, [activeSession, isMobile]);
+  }, [activeSession]);
 
   // Fetch pending sessions from API
   const fetchPendingSessions = async () => {
@@ -442,357 +423,11 @@ const DashboardContent = () => {
   // Get the active session data
   const currentSession = sessions.find((s) => s.id === activeSession);
 
-  // Session List Component
-  const SessionsList = () => (
-    <Card withBorder p="xs" style={{ height: "100%" }}>
-      <Group justify="space-between" mb="md">
-        <Title order={4}>Sessions</Title>
-        {isMobile && activeSession && (
-          <ActionIcon onClick={() => setActiveSession(null)}>
-            <IconArrowLeft size={20} />
-          </ActionIcon>
-        )}
-      </Group>
-      <ScrollArea h={isMobile ? "calc(100vh - 190px)" : "calc(100% - 40px)"}>
-        {sessions.length === 0 ? (
-          <Text c="dimmed" ta="center">
-            No active sessions
-          </Text>
-        ) : (
-          sessions
-            .filter(
-              (session) =>
-                session.status !== "ignored" && session.status !== "closed"
-            )
-            .map((session) => (
-              <Card
-                key={session.id}
-                withBorder
-                mb="xs"
-                p="xs"
-                style={{
-                  cursor: "pointer",
-                  backgroundColor:
-                    activeSession === session.id
-                      ? isDark
-                        ? theme.colors.dark[5]
-                        : theme.colors.blue[0]
-                      : undefined,
-                }}
-                onClick={() => setActiveSession(session.id)}
-              >
-                <Group justify="apart">
-                  <Text fw={500}>Session #{session.id.substring(0, 6)}</Text>
-                  <Badge
-                    color={session.status === "pending" ? "yellow" : "green"}
-                  >
-                    {session.status}
-                  </Badge>
-                </Group>
-                <Group justify="apart" mt="xs">
-                  <Text size="xs" c="dimmed">
-                    {new Date(session.lastActivity).toLocaleTimeString()}
-                  </Text>
-                  {session.status === "pending" ? (
-                    <Group gap="xs">
-                      <Button
-                        size="xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAcceptSession(session.id);
-                        }}
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        size="xs"
-                        color="gray"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openIgnoreSessionModal(session.id);
-                        }}
-                      >
-                        Ignore
-                      </Button>
-                    </Group>
-                  ) : (
-                    <Button
-                      size="xs"
-                      color="red"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEndSessionModal(session.id);
-                      }}
-                    >
-                      End
-                    </Button>
-                  )}
-                </Group>
-              </Card>
-            ))
-        )}
-      </ScrollArea>
-    </Card>
-  );
-
-  // Chat View Component
-  const ChatView = () => (
-    <Card
-      withBorder
-      style={{
-        flex: 1,
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {activeSession && currentSession ? (
-        <>
-          <Group justify="space-between" mb="md">
-            <Group>
-              {isMobile && (
-                <ActionIcon onClick={() => setActiveSession(null)}>
-                  <IconArrowLeft size={20} />
-                </ActionIcon>
-              )}
-              <Title order={4}>Chat #{currentSession.id.substring(0, 6)}</Title>
-            </Group>
-            <Group gap="xs">
-              <Badge color={currentSession.needsHandoff ? "red" : "blue"}>
-                {currentSession.needsHandoff
-                  ? "Needs Assistance"
-                  : "Monitoring"}
-              </Badge>
-              <Button
-                size="xs"
-                color="red"
-                onClick={() => openEndSessionModal(currentSession.id)}
-              >
-                End Session
-              </Button>
-            </Group>
-          </Group>
-
-          <ScrollArea
-            style={{ flex: 1 }}
-            mb="md"
-            h={isMobile ? "calc(100vh - 240px)" : undefined}
-          >
-            {currentSession.messages.length === 0 ? (
-              <Text c="dimmed" ta="center">
-                No messages yet
-              </Text>
-            ) : (
-              currentSession.messages.map((message, index) => (
-                <Box
-                  key={index}
-                  mb="xs"
-                  style={{
-                    display: "flex",
-                    flexDirection:
-                      message.role === "user" ? "row" : "row-reverse",
-                    justifyContent: "flex-start",
-                  }}
-                >
-                  <Paper
-                    p="xs"
-                    withBorder
-                    style={{
-                      maxWidth: "80%",
-                      backgroundColor: isDark
-                        ? message.role === "user"
-                          ? theme.colors.dark[6]
-                          : message.role === "assistant"
-                          ? theme.colors.blue[9]
-                          : message.role === "agent"
-                          ? theme.colors.green[9]
-                          : theme.colors.dark[5]
-                        : message.role === "user"
-                        ? "#f0f0f0"
-                        : message.role === "assistant"
-                        ? "#e6f7ff"
-                        : message.role === "agent"
-                        ? "#e6ffe6"
-                        : "#f9f9f9",
-                    }}
-                  >
-                    {message.role !== "user" && (
-                      <Badge
-                        size="xs"
-                        mb="xs"
-                        color={
-                          message.role === "assistant"
-                            ? "blue"
-                            : message.role === "agent"
-                            ? "green"
-                            : "gray"
-                        }
-                      >
-                        {message.role === "assistant"
-                          ? "AI Bot"
-                          : message.role === "agent"
-                          ? "Agent"
-                          : "System"}
-                      </Badge>
-                    )}
-                    <Text size="sm">{message.content}</Text>
-                    <Text size="xs" c="dimmed" ta="right" mt="xs">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </Text>
-                  </Paper>
-                </Box>
-              ))
-            )}
-          </ScrollArea>
-
-          <Group>
-            <TextInput
-              placeholder="Type a message..."
-              value={agentMessage}
-              onChange={(e) => setAgentMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              style={{ flex: 1 }}
-            />
-            <Button
-              leftSection={<IconSend size={16} />}
-              onClick={handleSendMessage}
-              disabled={!agentMessage.trim()}
-            >
-              Send
-            </Button>
-          </Group>
-        </>
-      ) : (
-        <Box
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <Text c="dimmed">
-            {isMobile
-              ? "Select a session from the menu"
-              : "Select a session to view the conversation"}
-          </Text>
-        </Box>
-      )}
-    </Card>
-  );
-
-  // Render mobile layout
-  if (isMobile) {
-    return (
-      <Box p="md">
-        <Group justify="space-between" mb="lg">
-          <Title order={2}>Agent Dashboard</Title>
-          <Group gap="sm">
-            <ColorSchemeToggle />
-            {!activeSession && (
-              <ActionIcon size="lg" onClick={() => setMobileMenuOpen(true)}>
-                <IconMenu2 size={24} />
-              </ActionIcon>
-            )}
-          </Group>
-        </Group>
-
-        {/* Mobile Layout */}
-        <Card withBorder mb="md">
-          <Group justify="space-between">
-            <Text>Agent Name:</Text>
-            <TextInput
-              value={agentName}
-              onChange={(e) => {
-                if (e.target.value.trim()) {
-                  setAgentName(e.target.value);
-                } else {
-                  setAgentName("Support Agent");
-                }
-              }}
-              placeholder="Your name"
-              size="sm"
-              style={{ width: "200px" }}
-              required
-            />
-          </Group>
-        </Card>
-
-        {/* Mobile View: Show either session list or chat */}
-        {activeSession ? <ChatView /> : <SessionsList />}
-
-        {/* Mobile Drawer for Sessions */}
-        <Drawer
-          opened={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          title="Sessions"
-          padding="md"
-        >
-          <SessionsList />
-        </Drawer>
-
-        {/* Modals */}
-        <Modal
-          opened={endSessionModalOpen}
-          onClose={() => setEndSessionModalOpen(false)}
-          title="End Session"
-          centered
-        >
-          <Text mb="md">
-            Are you sure you want to end this session? The user will be notified
-            that the conversation has ended.
-          </Text>
-          <Group justify="right">
-            <Button
-              variant="outline"
-              onClick={() => setEndSessionModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleEndSession}>
-              End Session
-            </Button>
-          </Group>
-        </Modal>
-
-        <Modal
-          opened={ignoreSessionModalOpen}
-          onClose={() => setIgnoreSessionModalOpen(false)}
-          title="Ignore Session"
-          centered
-        >
-          <Text mb="md">
-            Are you sure you want to ignore this session? The user will be
-            notified that all agents are currently busy.
-          </Text>
-          <Group justify="right">
-            <Button
-              variant="outline"
-              onClick={() => setIgnoreSessionModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button color="yellow" onClick={handleIgnoreSession}>
-              Ignore Session
-            </Button>
-          </Group>
-        </Modal>
-      </Box>
-    );
-  }
-
-  // Render tablet/desktop layout
   return (
     <Box p="md">
-      <Group justify="space-between" mb="lg">
-        <Title order={2}>Agent Dashboard</Title>
-        <ColorSchemeToggle />
-      </Group>
+      <Title order={2} mb="lg">
+        Agent Dashboard
+      </Title>
 
       {/* Agent settings */}
       <Card withBorder mb="md">
@@ -801,9 +436,11 @@ const DashboardContent = () => {
           <TextInput
             value={agentName}
             onChange={(e) => {
+              // Only update if not empty
               if (e.target.value.trim()) {
                 setAgentName(e.target.value);
               } else {
+                // Reset to default name if empty
                 setAgentName("Support Agent");
               }
             }}
@@ -815,34 +452,228 @@ const DashboardContent = () => {
         </Group>
       </Card>
 
-      <SimpleGrid
-        cols={isTablet ? 1 : 2}
-        spacing={4} // Use a very small value
-        style={{
-          height: "calc(100vh - 180px)",
-          gridTemplateColumns: isTablet ? "1fr" : "300px 1fr", // This is key
-        }}
+      <Group
+        align="flex-start"
+        gap="md"
+        style={{ height: "calc(100vh - 180px)" }}
       >
-        {/* Session list - fixed width in desktop */}
-        <Box
-          style={{
-            height: isTablet ? "auto" : "100%",
-          }}
-        >
-          <SessionsList />
-        </Box>
+        {/* Session list */}
+        <Card withBorder p="xs" style={{ width: "300px", height: "100%" }}>
+          <Title order={4} mb="md">
+            Sessions
+          </Title>
+          <ScrollArea h="calc(100% - 40px)">
+            {sessions.length === 0 ? (
+              <Text color="dimmed" ta="center">
+                No active sessions
+              </Text>
+            ) : (
+              sessions
+                .filter(
+                  (session) =>
+                    session.status !== "ignored" && session.status !== "closed"
+                )
+                .map((session) => (
+                  <Card
+                    key={session.id}
+                    withBorder
+                    mb="xs"
+                    p="xs"
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        activeSession === session.id ? "#f0f0ff" : undefined,
+                    }}
+                    onClick={() => setActiveSession(session.id)}
+                  >
+                    <Group justify="apart">
+                      <Text fw={500}>
+                        Session #{session.id.substring(0, 6)}
+                      </Text>
+                      <Badge
+                        color={
+                          session.status === "pending" ? "yellow" : "green"
+                        }
+                      >
+                        {session.status}
+                      </Badge>
+                    </Group>
+                    <Group justify="apart" mt="xs">
+                      <Text size="xs" color="dimmed">
+                        {new Date(session.lastActivity).toLocaleTimeString()}
+                      </Text>
+                      {session.status === "pending" ? (
+                        <Group gap="xs">
+                          <Button
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAcceptSession(session.id);
+                            }}
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            size="xs"
+                            color="gray"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openIgnoreSessionModal(session.id);
+                            }}
+                          >
+                            Ignore
+                          </Button>
+                        </Group>
+                      ) : (
+                        <Button
+                          size="xs"
+                          color="red"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEndSessionModal(session.id);
+                          }}
+                        >
+                          End
+                        </Button>
+                      )}
+                    </Group>
+                  </Card>
+                ))
+            )}
+          </ScrollArea>
+        </Card>
 
         {/* Chat view */}
-        {(!isTablet || !activeSession) && (
-          <Box
-            style={{
-              height: isTablet && !activeSession ? "auto" : "100%",
-            }}
-          >
-            <ChatView />
-          </Box>
-        )}
-      </SimpleGrid>
+        <Card
+          withBorder
+          style={{
+            flex: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {activeSession && currentSession ? (
+            <>
+              <Group justify="apart" mb="md">
+                <Title order={4}>
+                  Chat with Session #{currentSession.id.substring(0, 6)}
+                </Title>
+                <Group gap="xs">
+                  <Badge color={currentSession.needsHandoff ? "red" : "blue"}>
+                    {currentSession.needsHandoff
+                      ? "Needs Assistance"
+                      : "Monitoring"}
+                  </Badge>
+                  <Button
+                    size="xs"
+                    color="red"
+                    onClick={() => openEndSessionModal(currentSession.id)}
+                  >
+                    End Session
+                  </Button>
+                </Group>
+              </Group>
+
+              <ScrollArea style={{ flex: 1 }} mb="md">
+                {currentSession.messages.length === 0 ? (
+                  <Text color="dimmed" ta="center">
+                    No messages yet
+                  </Text>
+                ) : (
+                  currentSession.messages.map((message, index) => (
+                    <Box
+                      key={index}
+                      mb="xs"
+                      style={{
+                        display: "flex",
+                        flexDirection:
+                          message.role === "user" ? "row" : "row-reverse",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      <Paper
+                        p="xs"
+                        withBorder
+                        style={{
+                          maxWidth: "80%",
+                          backgroundColor:
+                            message.role === "user"
+                              ? "#f0f0f0"
+                              : message.role === "assistant"
+                              ? "#e6f7ff"
+                              : message.role === "agent"
+                              ? "#e6ffe6"
+                              : "#f9f9f9",
+                        }}
+                      >
+                        {message.role !== "user" && (
+                          <Badge
+                            size="xs"
+                            mb="xs"
+                            color={
+                              message.role === "assistant"
+                                ? "blue"
+                                : message.role === "agent"
+                                ? "green"
+                                : "gray"
+                            }
+                          >
+                            {message.role === "assistant"
+                              ? "AI Bot"
+                              : message.role === "agent"
+                              ? "Agent"
+                              : "System"}
+                          </Badge>
+                        )}
+                        <Text size="sm">{message.content}</Text>
+                        <Text size="xs" color="dimmed" ta="right" mt="xs">
+                          {new Date(message.timestamp).toLocaleTimeString()}
+                        </Text>
+                      </Paper>
+                    </Box>
+                  ))
+                )}
+              </ScrollArea>
+
+              <Group>
+                <TextInput
+                  placeholder="Type a message..."
+                  value={agentMessage}
+                  onChange={(e) => setAgentMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  leftSection={<IconSend size={16} />}
+                  onClick={handleSendMessage}
+                  disabled={!agentMessage.trim()}
+                >
+                  Send
+                </Button>
+              </Group>
+            </>
+          ) : (
+            <Box
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+              }}
+            >
+              <Text color="dimmed">
+                Select a session to view the conversation
+              </Text>
+            </Box>
+          )}
+        </Card>
+      </Group>
 
       {/* End Session Confirmation Modal */}
       <Modal
@@ -855,7 +686,7 @@ const DashboardContent = () => {
           Are you sure you want to end this session? The user will be notified
           that the conversation has ended.
         </Text>
-        <Group justify="right">
+        <Group justify="flex-end">
           <Button
             variant="outline"
             onClick={() => setEndSessionModalOpen(false)}
@@ -879,7 +710,7 @@ const DashboardContent = () => {
           Are you sure you want to ignore this session? The user will be
           notified that all agents are currently busy.
         </Text>
-        <Group justify="right">
+        <Group justify="flex-end">
           <Button
             variant="outline"
             onClick={() => setIgnoreSessionModalOpen(false)}
