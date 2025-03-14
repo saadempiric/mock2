@@ -125,49 +125,49 @@ export async function POST(req: Request) {
 }
 
 // Simple function to check for handoff criteria
-function checkHandoffCriteria(query: string, history: string): boolean {
-  // Define keywords that might indicate need for human intervention
-  const handoffKeywords = [
-    "speak to a human",
-    "talk to a person",
-    "connect me",
-    "live agent",
-    "real person",
-    "manager",
-    "supervisor",
-    "representative",
-    "complex issue",
-    "not helping",
-    "frustrated",
-    "complaint",
-    "refund",
-    "cancel",
-  ];
+// function checkHandoffCriteria(query: string, history: string): boolean {
+//   // Define keywords that might indicate need for human intervention
+//   const handoffKeywords = [
+//     "speak to a human",
+//     "talk to a person",
+//     "connect me",
+//     "live agent",
+//     "real person",
+//     "manager",
+//     "supervisor",
+//     "representative",
+//     "complex issue",
+//     "not helping",
+//     "frustrated",
+//     "complaint",
+//     "refund",
+//     "cancel",
+//   ];
 
-  // Check if query contains any handoff keywords
-  if (
-    handoffKeywords.some((keyword) => query.toLowerCase().includes(keyword))
-  ) {
-    return true;
-  }
+//   // Check if query contains any handoff keywords
+//   if (
+//     handoffKeywords.some((keyword) => query.toLowerCase().includes(keyword))
+//   ) {
+//     return true;
+//   }
 
-  // Check for repeated questions (simple implementation)
-  const userMessages = history.match(/User: ([\s\S]*?)(?=\nBot:|$)/g);
-  if (userMessages && userMessages.length >= 3) {
-    // Count occurrences of similar questions
-    const lastThreeMessages = userMessages.slice(-3);
-    const uniqueMessages = new Set(
-      lastThreeMessages.map((m) => m.toLowerCase())
-    );
+//   // Check for repeated questions (simple implementation)
+//   const userMessages = history.match(/User: ([\s\S]*?)(?=\nBot:|$)/g);
+//   if (userMessages && userMessages.length >= 3) {
+//     // Count occurrences of similar questions
+//     const lastThreeMessages = userMessages.slice(-3);
+//     const uniqueMessages = new Set(
+//       lastThreeMessages.map((m) => m.toLowerCase())
+//     );
 
-    // If there are fewer than 3 unique messages, the user is repeating
-    if (uniqueMessages.size < 3) {
-      return true;
-    }
-  }
+//     // If there are fewer than 3 unique messages, the user is repeating
+//     if (uniqueMessages.size < 3) {
+//       return true;
+//     }
+//   }
 
-  return false;
-}
+//   return false;
+// }
 /**
  * Determines if a user's query indicates the need for human agent handoff
  * using cosine similarity for semantic matching
@@ -311,13 +311,13 @@ function checkHandoffCriteria(query: string, history: string): boolean {
 //    * @returns boolean - Whether the query is similar to a handoff phrase
 //    */
 //   function isSemanticallySimilarToHandoff(userQuery: string): boolean {
-//     const threshold = 0.7; // Similarity threshold (0.0 to 1.0)
+//     const threshold = 0.8; // Similarity threshold (0.0 to 1.0)
 //     const queryEmbedding = getPhraseEmbedding(userQuery);
     
 //     for (const phrase of handoffPhrases) {
 //       const phraseEmbedding = getPhraseEmbedding(phrase);
 //       const similarity = cosineSimilarity(queryEmbedding, phraseEmbedding);
-      
+//       console.log(similarity)
 //       if (similarity >= threshold) {
 //         return true;
 //       }
@@ -331,37 +331,37 @@ function checkHandoffCriteria(query: string, history: string): boolean {
 //     return true;
 //   }
 
-//   // Check for repeat questions indicating frustration
-//   const userMessages = history.match(/User: ([\s\S]*?)(?=\nBot:|$)/g);
-//   if (userMessages && userMessages.length >= 3) {
-//     const lastThreeMessages = userMessages.slice(-3).map(msg => {
-//       // Extract just the message content, removing the "User: " prefix
-//       return msg.replace(/^User: /, '').trim();
-//     });
+//   // // Check for repeat questions indicating frustration
+//   // const userMessages = history.match(/User: ([\s\S]*?)(?=\nBot:|$)/g);
+//   // if (userMessages && userMessages.length >= 3) {
+//   //   const lastThreeMessages = userMessages.slice(-3).map(msg => {
+//   //     // Extract just the message content, removing the "User: " prefix
+//   //     return msg.replace(/^User: /, '').trim();
+//   //   });
     
-//     // Check for semantic similarity between the last messages
-//     const similarityThreshold = 0.8; // Higher threshold for determining repeats
-//     let repeatedMessageCount = 0;
+//   //   // Check for semantic similarity between the last messages
+//   //   const similarityThreshold = 0.8; // Higher threshold for determining repeats
+//   //   let repeatedMessageCount = 0;
     
-//     for (let i = 0; i < lastThreeMessages.length - 1; i++) {
-//       const currentMsgEmbedding = getPhraseEmbedding(lastThreeMessages[i]);
+//   //   for (let i = 0; i < lastThreeMessages.length - 1; i++) {
+//   //     const currentMsgEmbedding = getPhraseEmbedding(lastThreeMessages[i]);
       
-//       for (let j = i + 1; j < lastThreeMessages.length; j++) {
-//         const nextMsgEmbedding = getPhraseEmbedding(lastThreeMessages[j]);
-//         const similarity = cosineSimilarity(currentMsgEmbedding, nextMsgEmbedding);
+//   //     for (let j = i + 1; j < lastThreeMessages.length; j++) {
+//   //       const nextMsgEmbedding = getPhraseEmbedding(lastThreeMessages[j]);
+//   //       const similarity = cosineSimilarity(currentMsgEmbedding, nextMsgEmbedding);
         
-//         if (similarity >= similarityThreshold) {
-//           repeatedMessageCount++;
-//           break; // Found a similar message, move to next
-//         }
-//       }
-//     }
+//   //       if (similarity >= similarityThreshold) {
+//   //         repeatedMessageCount++;
+//   //         break; // Found a similar message, move to next
+//   //       }
+//   //     }
+//   //   }
     
-//     // If we have more than one similar message pair, the user is likely repeating
-//     if (repeatedMessageCount > 0) {
-//       return true;
-//     }
-//   }
+//   //   // If we have more than one similar message pair, the user is likely repeating
+//   //   if (repeatedMessageCount > 0) {
+//   //     return true;
+//   //   }
+//   // }
 
 //   // Check for explicit frustration keywords
 //   const frustrationKeywords = ["not working", "doesn't work", "useless", "waste of time", "ridiculous"];
@@ -371,3 +371,181 @@ function checkHandoffCriteria(query: string, history: string): boolean {
 
 //   return false;
 // }
+
+/**
+ * Determines if a user's query indicates the need for human agent handoff
+ * @param query - The user's current message
+ * @param history - The conversation history
+ * @returns boolean indicating whether to handoff to human agent
+ */
+function checkHandoffCriteria(query: string, history: string): boolean {
+  // Reference phrases that indicate a need for human intervention
+  const handoffPhrases = [
+    "speak to a human",
+    "talk to a person",
+    "connect me with an agent",
+    "live agent please",
+    "need a real person",
+    "transfer to manager",
+    "get me a supervisor",
+    "customer representative",
+    "this is a complex issue",
+    "you're not helping me",
+    "I'm getting frustrated",
+    "I have a complaint",
+    "process my refund",
+    "cancel my subscription",
+  ];
+
+  // List of stop words to be removed
+  const stopWords = [
+    "a", "an", "the", "and", "or", "but", "if", "because", "as", "what", "which",
+    "this", "that", "these", "those", "then", "just", "so", "than", "such", "both",
+    "through", "about", "for", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "doing", "can", "could", "should",
+    "would", "shall", "will", "may", "might", "must", "of", "at", "by", "for", "with",
+    "to", "from", "in", "on", "up", "down", "over", "under", "above", "below", "i",
+    "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them", "my",
+    "your", "his", "its", "our", "their", "please", "thank", "yes", "no", "ok", "okay"
+  ];
+
+  /**
+   * Remove stop words from a phrase
+   * @param phrase - The phrase to process
+   * @returns string[] - Array of meaningful words
+   */
+  function removeStopWords(phrase: string): string[] {
+    // First, clean up the phrase by removing punctuation and converting to lowercase
+    const cleanedPhrase = phrase.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?\d]/g, "");
+    
+    // Split into words and filter out stop words and empty strings
+    const words = cleanedPhrase.split(/\s+/).filter(word => 
+      word.length > 0 && !stopWords.includes(word)
+    );
+    
+    return words;
+  }
+
+  /**
+   * Calculate the Jaccard similarity between two sets of words
+   * @param set1 - First set of words
+   * @param set2 - Second set of words
+   * @returns number - Jaccard similarity score (0 to 1)
+   */
+  function jaccardSimilarity(set1: string[], set2: string[]): number {
+    if (set1.length === 0 && set2.length === 0) return 0;
+    
+    // Create sets to eliminate duplicates
+    const set1Unique = new Set(set1);
+    const set2Unique = new Set(set2);
+    
+    // Calculate intersection size
+    const intersection = new Set([...set1Unique].filter(x => set2Unique.has(x)));
+    
+    // Calculate union size
+    const union = new Set([...set1Unique, ...set2Unique]);
+    
+    // Jaccard similarity = size of intersection / size of union
+    return intersection.size / union.size;
+  }
+
+  /**
+   * Calculate the exact match ratio between two sets of words
+   * @param set1 - First set of words
+   * @param set2 - Second set of words
+   * @returns number - Exact match ratio (0 to 1)
+   */
+  function exactMatchRatio(set1: string[], set2: string[]): number {
+    if (set1.length === 0 || set2.length === 0) return 0;
+    
+    // Count exact matches
+    let matches = 0;
+    for (const word of set1) {
+      if (set2.includes(word)) {
+        matches++;
+      }
+    }
+    
+    // Return ratio of matches to the smaller set size
+    return matches / Math.min(set1.length, set2.length);
+  }
+
+  /**
+   * Check if a query is semantically similar to any handoff phrase
+   * @param userQuery - The user's query
+   * @returns boolean - Whether the query is similar to a handoff phrase
+   */
+  function isSemanticallySimilarToHandoff(userQuery: string): boolean {
+    // Extract meaningful words from the user query
+    const queryWords = removeStopWords(userQuery);
+    
+    // If after removing stop words, the query is empty, it's not a handoff request
+    if (queryWords.length === 0) {
+      return false;
+    }
+    
+    // Log the cleaned query words for debugging
+    console.log(`Cleaned query words: [${queryWords.join(', ')}]`);
+    
+    // Handoff-specific important words that strongly indicate a handoff request
+    const handoffIndicators = [
+      "human", "person", "agent", "representative", "manager", "supervisor", 
+      "speak", "talk", "connect", "transfer", "live", "real", 
+      "refund", "cancel", "complaint", "frustrated"
+    ];
+    
+    // Check for direct presence of handoff indicator words
+    const containsHandoffIndicator = queryWords.some(word => handoffIndicators.includes(word));
+    if (containsHandoffIndicator) {
+      console.log(`Handoff triggered! Found handoff indicator word in query.`);
+      return true;
+    }
+    
+    // Process each handoff phrase and check for similarity
+    let highestJaccard = 0;
+    let highestExactMatch = 0;
+    let bestMatchPhrase = '';
+    
+    for (const phrase of handoffPhrases) {
+      // Extract meaningful words from the handoff phrase
+      const phraseWords = removeStopWords(phrase);
+      
+      // Calculate Jaccard similarity
+      const jaccard = jaccardSimilarity(queryWords, phraseWords);
+      
+      // Calculate exact match ratio
+      const exactMatch = exactMatchRatio(queryWords, phraseWords);
+      
+      // Track highest similarity for logging
+      if (jaccard > highestJaccard) {
+        highestJaccard = jaccard;
+        bestMatchPhrase = phrase;
+      }
+      
+      // Log the similarity for debugging
+      console.log(`Matching "${queryWords.join(' ')}" with "${phraseWords.join(' ')}": Jaccard=${jaccard.toFixed(2)}, ExactMatch=${exactMatch.toFixed(2)}`);
+      
+      // Combined threshold approach
+      if ((jaccard >= 0.4 && exactMatch >= 0.5) || jaccard >= 0.6) {
+        console.log(`Handoff triggered! Matched phrase: "${phrase}" with Jaccard=${jaccard.toFixed(2)}, ExactMatch=${exactMatch.toFixed(2)}`);
+        return true;
+      }
+    }
+    
+    console.log(`Highest Jaccard similarity: ${highestJaccard.toFixed(2)} with phrase: "${bestMatchPhrase}"`);
+    return false;
+  }
+
+  // Check if query is semantically similar to any handoff phrase
+  if (isSemanticallySimilarToHandoff(query)) {
+    return true;
+  }
+
+  // Check for explicit frustration keywords
+  const frustrationKeywords = ["not working", "doesn't work", "useless", "waste of time", "ridiculous"];
+  if (frustrationKeywords.some(keyword => query.toLowerCase().includes(keyword))) {
+    return true;
+  }
+
+  return false;
+}
